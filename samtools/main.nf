@@ -99,7 +99,6 @@ process mergeFinal {
 process separate_panel {
     
     container="ghcr.io/bwbioinfo/samtools-docker-cwl:e80764711a121872e9ea35d90229cec6dd6d8dec"
-    publishDir "${params.out_dir}/alignments", mode: 'link', enabled: params.publish
     label "sam_mid"
 
     input:
