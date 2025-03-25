@@ -56,8 +56,7 @@ process coverage_as {
         -p ${bed_primary} \\
         -u ${bed_mapq60} \\
         -b ${background_cov} \\
-        -l ${low_fidelity_list} \\
-        -o ${prefix}_coverage_mapq.pdf
+        -l ${low_fidelity_list}
     """
     
 }
