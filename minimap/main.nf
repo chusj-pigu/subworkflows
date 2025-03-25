@@ -23,10 +23,10 @@ process mapping_amplicon {
     container="ghcr.io/bwbioinfo/minimap2-docker-cwl:3dcd900155cddf797802bf4676545af87d9e0821"
 
     input:
-    tuple path(sample), path(ref)
+    tuple val(meta), path(sample), path(ref)
 
     output:
-    path "${sample.simpleName}-${ref.simpleName}.sam"
+    tuple val(meta), path("${sample.simpleName}-${ref.simpleName}.sam")
 
     script:
     """

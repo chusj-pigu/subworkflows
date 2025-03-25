@@ -1,12 +1,12 @@
 process clean_countmx {
-    publishDir "${params.out_dir}/reports", mode: 'link'
+    publishDir "${params.out_dir}/reports", mode: 'link', enabled: params.publish
     container 'rocker/tidyverse:latest'
 
     input:
     path tab
 
     output:
-    path "readCounts_summary.xlsx"
+    path "readCounts_summary.csv"
 
     script:
     """
@@ -15,15 +15,13 @@ process clean_countmx {
 }
 
 process clean_vcf {
-    publishDir "${params.out_dir}", mode: 'link'
+    publishDir "${params.out_dir}", mode: params.publish_mode
     container 'rocker/tidyverse:latest'
     tag "$type"
     label "rscript"
-    executor 'slurm'
-    array 5
 
     input:
-    tuple val(type), path(table), path(stjude), path(cancer_ex)
+    tuple val(type), path(table), path(bed_genes), path(cancer_ex)
 
     output:
     path "*.tsv", optional:true
@@ -33,7 +31,7 @@ process clean_vcf {
 
     script:
     """
-    vcf_arrange.R $table $stjude $cancer_ex
+    vcf_arrange.R $table $bed_genes $cancer_ex
     """
 }
 

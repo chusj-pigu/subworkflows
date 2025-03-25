@@ -20,17 +20,17 @@ process gather_sturgeon {
 process merge_amplicon {
     label "cat"
     publishDir "${params.out_dir}/reads", mode: 'link', enabled: params.publish
-    tag "merge $sample"
+    tag "merge $meta"
 
     input:
-    tuple val(sample), val(fasta), val(barcode)
+    tuple val(meta), val(fasta), val(barcode)
 
     output:
-    tuple path("${sample}.fq.gz"), path("${fasta}.fq.gz")
+    tuple val(meta), path("${meta}.fq.gz"), path("${fasta}.fq.gz")
 
     script:
     """
-    cat ${params.in_dir}/${barcode}/* > "${sample}.fq.gz"
+    cat ${params.in_dir}/${barcode}/* > "${meta}.fq.gz"
     if [ -d ${params.ref_dir}/${fasta} ]; then
         cat ${params.ref_dir}/${fasta}/* > ${fasta}.fq.gz
     else
@@ -48,11 +48,11 @@ process merge_barcode {
     tuple val(barcode), val(sample), path(fq)
 
     output:
-    path "${sample}.fq.gz"
+    tuple val(sample), path("${sample}.fq")
 
     script:
     """
-    cat $fq > "${sample}.fq.gz"
+    cat $fq > "${sample}.fq"
     """
 }
 

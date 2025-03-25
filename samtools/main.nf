@@ -2,7 +2,7 @@ process sam_sort {
 
     publishDir "${params.out_dir}/alignments", mode: 'link', enabled: params.publish
     label "sam_big"
-    container="ghcr.io/bwbioinfo/samtools-docker-cwl:e80764711a121872e9ea35d90229cec6dd6d8dec"
+    container="ghcr.io/chusj-pigu/samtools:b195aca24376fa3482000f5bcdc804ac36d9da0b"
     tag "sam_sort $sample_id"
 
     input: 
@@ -22,44 +22,49 @@ process ubam_to_fastq {
 
     publishDir "${params.out_dir}/reads", mode: 'link', enabled: params.publish
     label "sam_long"
-    container="ghcr.io/bwbioinfo/samtools-docker-cwl:e80764711a121872e9ea35d90229cec6dd6d8dec"
-    tag "bam-fastq $ubam.baseName"
+    container="ghcr.io/chusj-pigu/samtools:b195aca24376fa3482000f5bcdc804ac36d9da0b"
+    tag "bam-fastq $sample_id"
 
     input:
-    tuple val(sample_id), path(ubam)
+    tuple val(sample_id), val(barcode), path(ubam)
 
     output:
-    tuple val(sample_id), path("${ubam.baseName}.fq.gz")
+    tuple val(sample_id), path("*.fq.gz")
 
     script:
-    def mod = params.no_mod ? "" : "-T '*'" 
+    def mod = params.no_mod ? "" : "-T '*'"
+    def suffix = ubam.baseName.tokenize('_')[-1].replace('.bam', '')
     """
-    samtools fastq $mod -@ $params.threads $ubam > ${ubam.baseName}.fq.gz
+    samtools fastq \\
+    $mod \\
+    -@ $task.cpus \\
+    $ubam | \\
+    pigz -p $task.cpus -c > ${sample_id}_${suffix}.fq.gz
     """
 }
 
 process qs_filter {
     
     label "sam_sm"
-    container="ghcr.io/bwbioinfo/samtools-docker-cwl:e80764711a121872e9ea35d90229cec6dd6d8dec"
-    tag "qc filter $sample_id"
+    container="ghcr.io/chusj-pigu/samtools:b195aca24376fa3482000f5bcdc804ac36d9da0b"
+    tag "qc filter $barcode"
 
     input:
-    tuple val(sample_id), path(ubam)
+    tuple val(sample_id), val(barcode), path(ubam)
 
     output:
-    tuple val(sample_id), path("${sample_id}_pass.bam"), emit: ubam_pass
-    tuple val(sample_id), path("${sample_id}_fail.bam"), emit: ubam_fail
+    tuple val(sample_id), val(barcode), path("${barcode}_pass.bam"), emit: ubam_pass
+    tuple val(sample_id), val(barcode), path("${barcode}_fail.bam"), emit: ubam_fail
 
     script:
     """
-    samtools view --no-PG -@ $params.threads -e '[qs] >=$params.minqs' -b $ubam --output ${sample_id}_pass.bam --unoutput ${sample_id}_fail.bam
+    samtools view --no-PG -@ $params.threads -e '[qs] >=$params.minqs' -b $ubam --output ${barcode}_pass.bam --unoutput ${barcode}_fail.bam
     """
 }
 
 process mergeChunks {
     
-    container="ghcr.io/bwbioinfo/samtools-docker-cwl:e80764711a121872e9ea35d90229cec6dd6d8dec"
+    container="ghcr.io/chusj-pigu/samtools:b195aca24376fa3482000f5bcdc804ac36d9da0b"
     tag "merge $chunk"
     label "sam_mid"
     debug true
@@ -80,7 +85,7 @@ process mergeChunks {
 
 process mergeFinal {
     
-    container="ghcr.io/bwbioinfo/samtools-docker-cwl:e80764711a121872e9ea35d90229cec6dd6d8dec"
+    container="ghcr.io/chusj-pigu/samtools:b195aca24376fa3482000f5bcdc804ac36d9da0b"
     publishDir "${params.out_dir}/alignments", mode: 'link', enabled: params.publish
     label "sam_big"
 
@@ -98,7 +103,8 @@ process mergeFinal {
 
 process separate_panel {
     
-    container="ghcr.io/bwbioinfo/samtools-docker-cwl:e80764711a121872e9ea35d90229cec6dd6d8dec"
+    container="ghcr.io/chusj-pigu/samtools:b195aca24376fa3482000f5bcdc804ac36d9da0b"
+    publishDir "${params.out_dir}/alignments", mode: 'link', enabled: params.publish
     label "sam_mid"
 
     input:

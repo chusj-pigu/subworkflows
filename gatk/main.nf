@@ -1,8 +1,6 @@
 process gatk_table {
     container="broadinstitute/gatk"
     tag "$type"
-    executor 'slurm'
-    array 4 
 
     input:
     tuple val(type), path(vcf), val(field)
