@@ -37,20 +37,27 @@ process clean_vcf {
 
 process coverage_as {
     publishDir "${params.out_dir}/reports", mode: 'link'
-    container 'rocker/tidyverse:latest'
+    container 'ghcr.io/chusj-pigu/tidyverse:latest'
 
     input:
     path(bed_nofilter)
     path(bed_primary)
     path(bed_mapq60)
     val(background_cov)
+    path(low_fidelity_list)
     
     output:
     path "*.pdf"
 
     script:
     """
-    coverage_plot.R $bed_nofilter $bed_primary $bed_mapq60 $background_cov
+    coverage_plot.R \\
+        -n ${bed_nofilter} \\
+        -p ${bed_primary} \\
+        -u ${bed_mapq60} \\
+        -b ${background_cov} \\
+        -l ${low_fidelity_list} \\
+        -o ${prefix}_coverage_mapq.pdf
     """
     
 }
