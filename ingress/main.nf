@@ -120,11 +120,12 @@ process remove_padding {
     path "*.bed"
 
     script:
-    def prefix = task.ext.prefix ?: "${bed}.baseName_nopadding"
+    def prefix = task.ext.prefix ?: "${bed}.baseName"
+    def output_name = "${prefix}_nopadding.bed"
     """
     awk -F'\\t' '
         BEGIN {OFS="\\t"} 
         { \$2 = \$2 + $padding; \$3 = \$3 - $padding; print }
-    ' $bed > \${prefix}.bed
+    ' $bed > $output_name
     """
 }

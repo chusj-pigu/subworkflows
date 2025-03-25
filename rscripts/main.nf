@@ -52,11 +52,11 @@ process coverage_as {
     script:
     """
     coverage_plot.R \\
-        -n ${bed_nofilter} \\
-        -p ${bed_primary} \\
-        -u ${bed_mapq60} \\
+        -n "${bed_nofilter}" \\
+        -p "${bed_primary}" \\
+        -u "${bed_mapq60}" \\
         -b ${background_cov} \\
-        -l ${low_fidelity_list}
+        -l "${low_fidelity_list}"
     """
     
 }
