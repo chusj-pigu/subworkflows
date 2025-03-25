@@ -106,4 +106,27 @@ process gzip {
     """
 }
 
+process remove_padding {
 
+    label 'local'
+
+    tag 'bed'
+
+    input:
+    path(bed),
+    val(padding)
+
+    output:
+    tuple val(meta),
+        path("*.bed"),
+        emit: bed
+
+    script:
+    def prefix = task.ext.prefix ?: "${bed}.baseName"
+    """
+    awk -F'\t' \\
+        'BEGIN {OFS="\t"} \\
+        { $2 = $2 + ${padding}; $3 = $3 - ${padding}; print }' \\
+        ${bed} > ${prefix}_nopadding.bed
+    """
+}
