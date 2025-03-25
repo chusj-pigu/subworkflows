@@ -15,7 +15,8 @@ process mosdepth {
 
     script:
     def bedfile = bed.name != 'NO_BED' ? "-b $bed" : ""
+    def threads = task.cpus
     """
-    mosdepth -n -F $flag -Q $qual $bedfile '$sample_id' $bam
+    mosdepth -t ${threads} -n -F $flag -Q $qual $bedfile '$sample_id' $bam
     """
 }
